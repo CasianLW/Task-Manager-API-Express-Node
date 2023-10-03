@@ -1,8 +1,8 @@
 # Express Task Manager API
 
-<div style="margin:0 auto">
-    ![gif](https://media.giphy.com/media/znlSLQEFWmxI3XO9zP/giphy.gif)
-    An Express-based backend API built to manage tasks with user authentication and CRUD operations on tasks.
+<div align="center">
+    <img src="https://media.giphy.com/media/znlSLQEFWmxI3XO9zP/giphy.gif" alt="gif" />
+    <p>An Express-based backend API built to manage tasks with user authentication and CRUD operations on tasks.</p>
 </div>
 
 ## Features

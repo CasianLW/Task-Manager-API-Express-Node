@@ -67,6 +67,16 @@ Before starting, ensure you have the following:
 - **PUT** `/tasks/:id`: Update a specific task by its ID.
 - **DELETE** `/tasks/:id`: Remove a specific task by its ID.
 
+#### Users Routes (Requires Authentication by .env AdminKey)
+
+\*set the api key in authorisation to Admin-Key and its value
+
+- **GET** `/users`: Fetch all users
+- **POST** `/users`: Create a new user.
+- **GET** `/users/:id`: Fetch a specific user by its ID.
+- **PUT** `/users/:id`: Update a specific user by its ID.
+- **DELETE** `/users/:id`: Remove a specific user by its ID.
+
 ### Testing
 
 Tests are powered by Jest. Run them using:

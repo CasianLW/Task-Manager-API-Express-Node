@@ -33,7 +33,7 @@ Before starting, ensure you have the following:
 1. **Clone the Repository**:
 
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/CasianLW/TodoApi.git
    ```
 
 1. **Navigate to Project Directory**
@@ -71,13 +71,12 @@ Before starting, ensure you have the following:
 
 Tests are powered by Jest. Run them using:
 
-    ```bash
-    npm test
-    ```
+```
+npm test
+```
 
 ### Second section (from Technologies Used to License):
 
-```markdown
 ### Technologies Used
 
 - [Express](https://expressjs.com/)
@@ -90,4 +89,3 @@ Tests are powered by Jest. Run them using:
 ### License
 
 This project is licensed under the MIT License.
-```

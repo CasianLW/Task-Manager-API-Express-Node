@@ -5,8 +5,23 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const jwtSecret = process.env.JWT_SECRET;
 const router = express.Router();
+const mongoose = require("mongoose");
 
 const adminKey = process.env.ADMIN_KEY;
+function isValidEmail(email) {
+  // A very basic email validation, just for demo purposes
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return regex.test(email);
+}
+
+function isValidPassword(password) {
+  // At least one uppercase letter, one number and a minimum of 5 characters
+  const regex = /^(?=.*[A-Z])(?=.*\d).{5,}$/;
+  return regex.test(password);
+}
+function isValidObjectId(id) {
+  return mongoose.Types.ObjectId.isValid(id);
+}
 
 // Middleware to check admin key
 function checkAdminKey(req, res, next) {
@@ -19,6 +34,18 @@ function checkAdminKey(req, res, next) {
 // Inscription
 router.post("/register", async (req, res) => {
   const { name, email, password } = req.body;
+  // Email and Password Validation
+  if (!isValidEmail(email)) {
+    return res.status(400).send("Invalid email format.");
+  }
+
+  if (!isValidPassword(password)) {
+    return res
+      .status(400)
+      .send(
+        "Password should have a minimum of 5 characters, at least one uppercase letter and one number."
+      );
+  }
 
   // Vérification si l'utilisateur existe déjà
   let user = await User.findOne({ email });
@@ -42,6 +69,10 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
+    // Email and Password Validation (optional for login as this is just to check if entered email is in valid format or not)
+    if (!isValidEmail(email)) {
+      return res.status(400).send("Invalid email format.");
+    }
 
     const user = await User.findOne({ email });
     if (!user) return res.status(400).send("Invalid email or password.");
@@ -63,7 +94,13 @@ router.post("/login", async (req, res) => {
 // Update user
 router.put("/user/:id", checkAdminKey, async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
+    const { id } = req.params;
+
+    if (!isValidObjectId(id)) {
+      return res.status(400).send("Invalid user ID.");
+    }
+
+    const user = await User.findById(id);
     if (!user) {
       return res.status(404).send("User not found.");
     }
@@ -87,13 +124,18 @@ router.put("/user/:id", checkAdminKey, async (req, res) => {
 // Delete user
 router.delete("/user/:id", checkAdminKey, async (req, res) => {
   try {
-    const user = await User.findByIdAndRemove(req.params.id);
+    const { id } = req.params;
+
+    if (!isValidObjectId(id)) {
+      return res.status(400).send("Invalid user ID.");
+    }
+    const user = await User.findByIdAndRemove(id);
     if (!user) {
       return res.status(404).send("User not found.");
     }
     res.send({ message: "User deleted." });
   } catch (error) {
-    console.error(error);
+    console.error("Error detail:", error.message); // Added more detailed logging
     res.status(500).send("Server error.");
   }
 });

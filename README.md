@@ -1,8 +1,9 @@
 # Express Task Manager API
 
-<iframe src="https://giphy.com/embed/znlSLQEFWmxI3XO9zP" width="480" height="270" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/jwfrancis-music-jw-francis-our-story-znlSLQEFWmxI3XO9zP">via GIPHY</a></p>
-
-An Express-based backend API built to manage tasks with user authentication and CRUD operations on tasks.
+<div style="margin:0 auto">
+    ![gif](https://media.giphy.com/media/znlSLQEFWmxI3XO9zP/giphy.gif)
+    An Express-based backend API built to manage tasks with user authentication and CRUD operations on tasks.
+</div>
 
 ## Features
 

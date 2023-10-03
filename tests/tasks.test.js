@@ -17,7 +17,7 @@ describe("Tasks routes", () => {
     const res1 = await request(appUrl).post("/register").send({
       name: "Test UserTasks1",
       email: "testUserTasks1@example.com",
-      password: "password123",
+      password: "Password123",
     });
     token1 = res1.body.token;
     userId1 = res1.body.userId;
@@ -26,7 +26,7 @@ describe("Tasks routes", () => {
     const res2 = await request(appUrl).post("/register").send({
       name: "Test UserTasks2",
       email: "testUserTasks2@example.com",
-      password: "password123",
+      password: "Password123",
     });
     token2 = res2.body.token;
     userId2 = res2.body.userId;

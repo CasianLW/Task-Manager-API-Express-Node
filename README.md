@@ -71,7 +71,7 @@ Before starting, ensure you have the following:
 
 #### Users Routes (Requires Authentication by .env AdminKey)
 
-\*set the api key in authorisation to Admin-Key and its value
+\*set the api key in authorisation to Admin-Key and its value (from .env)
 
 - **GET** `/users`: Fetch all users
 - **POST** `/users`: Create a new user.

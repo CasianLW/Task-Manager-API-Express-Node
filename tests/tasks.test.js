@@ -35,7 +35,7 @@ describe("Tasks routes", () => {
     const taskRes = await request(appUrl)
       .post("/tasks")
       .set("Authorization", `Bearer ${token2}`)
-      .send({ body: "Task by user2" });
+      .send({ body: "Task by user2", completed: true });
     taskId2 = taskRes.body._id; // Assuming your task object has an `_id` field
   }, 10000);
 
@@ -95,6 +95,29 @@ describe("Tasks routes", () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toBeInstanceOf(Array);
+  });
+  // Test to check the completed tasks of a user
+  test("Get completed tasks of user", async () => {
+    const response = await request(appUrl)
+      .get("/tasks/completed")
+      .set("Authorization", `Bearer ${token2}`)
+      .send();
+
+    expect(response.status).toBe(200);
+    expect(response.body).toBeInstanceOf(Array);
+    expect(response.body[0]).toHaveProperty("completed", true); // Ensure the first task in the list is completed
+  });
+
+  // Test to check the pending tasks of a user
+  test("Get pending tasks of user", async () => {
+    const response = await request(appUrl)
+      .get("/tasks/pending")
+      .set("Authorization", `Bearer ${token1}`)
+      .send();
+
+    expect(response.status).toBe(200);
+    expect(response.body).toBeInstanceOf(Array);
+    expect(response.body[0]).toHaveProperty("completed", false); // Ensure the first task in the list is not completed
   });
 
   test("Access specific task", async () => {

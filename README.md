@@ -62,10 +62,12 @@ Before starting, ensure you have the following:
 #### Task Routes (Requires Authentication)
 
 - **GET** `/tasks`: Fetch all tasks for the authenticated user.
+- **GET** `/tasks/completed`: Fetch all completed tasks for the authenticated user.
+- **GET** `/tasks/pending`: Fetch all pending tasks for the authenticated user.
 - **POST** `/tasks`: Create a new task.
-- **GET** `/tasks/:id`: Fetch a specific task by its ID.
-- **PUT** `/tasks/:id`: Update a specific task by its ID.
-- **DELETE** `/tasks/:id`: Remove a specific task by its ID.
+- **GET** `/tasks/:id`: Fetch a specific task by its ID for the auth user.
+- **PUT** `/tasks/:id`: Update a specific task by its ID for the auth user.
+- **DELETE** `/tasks/:id`: Remove a specific task by its ID for the auth user.
 
 #### Users Routes (Requires Authentication by .env AdminKey)
 

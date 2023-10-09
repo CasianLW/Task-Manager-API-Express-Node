@@ -33,6 +33,32 @@ router.get("/", async (req, res) => {
   res.send(tasks);
 });
 
+// Fetch completed tasks of the user
+router.get("/completed", async (req, res) => {
+  try {
+    const tasks = await Task.find({
+      user_id: req.user.id,
+      completed: true,
+    }).sort({ created_at: -1 });
+    res.send(tasks);
+  } catch (err) {
+    res.status(400).send(err.message);
+  }
+});
+
+// Fetch pending (or uncompleted) tasks of the user
+router.get("/pending", async (req, res) => {
+  try {
+    const tasks = await Task.find({
+      user_id: req.user.id,
+      completed: false,
+    }).sort({ created_at: -1 });
+    res.send(tasks);
+  } catch (err) {
+    res.status(400).send(err.message);
+  }
+});
+
 // Ajouter une tâche
 router.post("/", async (req, res) => {
   const task = new Task({

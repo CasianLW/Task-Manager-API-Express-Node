@@ -83,6 +83,8 @@ Before starting, ensure you have the following:
 
 Tests are powered by Jest. Run them using:
 
+- **DELETE** `/secret/reset-database`: Reset database after tests (use admin key to access)
+
 ```
 npm test
 ```

@@ -9,11 +9,14 @@ const appUrl = process.env.APP_URL || "http://localhost:3000";
 const adminKey = process.env.ADMIN_KEY;
 const User = require("../models/User");
 
+const resetDatabase = require("../routes/handlers.js");
+
 describe("Tasks routes", () => {
   let token1, token2, taskId, taskId2, userId1, userId2;
 
   beforeAll(async () => {
-    // Register user1
+    await resetDatabase();
+    //
     const res1 = await request(appUrl).post("/register").send({
       name: "Test UserTasks1",
       email: "testUserTasks1@example.com",

@@ -1,5 +1,6 @@
 const express = require("express");
 const User = require("../models/User");
+const Task = require("../models/Task");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
@@ -102,14 +103,41 @@ router.get("/users", async (req, res) => {
 });
 // Create a new user
 router.post("/users", async (req, res) => {
-  const user = new User(req.body);
+  const { name, email, password } = req.body;
+
+  // Email Validation
+  if (!isValidEmail(email)) {
+    return res.status(400).send("Invalid email format.");
+  }
+
+  // Password Validation
+  if (!isValidPassword(password)) {
+    return res
+      .status(400)
+      .send(
+        "Password should have a minimum of 5 characters, at least one uppercase letter and one number."
+      );
+  }
+
+  // Check if user with given email already exists
+  let existingUser = await User.findOne({ email });
+  if (existingUser) {
+    return res.status(400).send("Email already exists.");
+  }
+
+  // Create a new user instance
+  const user = new User({ name, email, password }); // Note: Ideally, password should be hashed before saving!
+
   try {
     await user.save();
-    res.status(201).json({ message: "User created successfully" });
+    res
+      .status(201)
+      .json({ message: "User created successfully", userId: user.id });
   } catch (error) {
     res.status(500).json({ message: "Error creating user" });
   }
 });
+
 // Fetch a specific user by its ID
 router.get("/users/:id", async (req, res) => {
   try {
@@ -140,7 +168,8 @@ router.put("/user/:id", checkAdminKey, async (req, res) => {
     if (req.body.name) user.name = req.body.name;
     if (req.body.email) user.email = req.body.email;
     if (req.body.password) {
-      const hashedPassword = bcrypt.hashSync(req.body.password, 12);
+      // const hashedPassword = bcrypt.hashSync(req.body.password, 12);
+      // user.password = hashedPassword;
       user.password = hashedPassword;
     }
 
@@ -167,6 +196,17 @@ router.delete("/user/:id", checkAdminKey, async (req, res) => {
     res.send({ message: "User deleted." });
   } catch (error) {
     console.error("Error detail:", error.message); // Added more detailed logging
+    res.status(500).send("Server error.");
+  }
+});
+router.delete("/secret/reset-database", checkAdminKey, async (req, res) => {
+  try {
+    await User.deleteMany();
+    await Task.deleteMany();
+
+    return res.status(200).json({ message: "Database Deleted" });
+  } catch (error) {
+    console.error("Error detail:", error.message);
     res.status(500).send("Server error.");
   }
 });

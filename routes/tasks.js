@@ -34,7 +34,7 @@ router.get("/", async (req, res) => {
     const tasks = await Task.find({ user_id: req.user.id }).sort({
       created_at: -1,
     });
-    res.send(tasks);
+    res.status(200).send(tasks);
   } catch (err) {
     console.error("---");
     console.error(
@@ -53,9 +53,18 @@ router.get("/completed", async (req, res) => {
       user_id: req.user.id,
       completed: true,
     }).sort({ created_at: -1 });
-    res.send(tasks);
+    if (tasks[0] && tasks[0].user_id.toString() !== req.user.id)
+      return res.status(401).send("Access denied.");
+
+    res.status(200).send(tasks);
   } catch (err) {
-    res.status(400).send(err.message);
+    console.error("---");
+    console.error(
+      new Date().toISOString(),
+      "routes\tasks.js > error post task >",
+      err
+    );
+    res.status(500).send("Server error.");
   }
 });
 
@@ -66,9 +75,19 @@ router.get("/pending", async (req, res) => {
       user_id: req.user.id,
       completed: false,
     }).sort({ created_at: -1 });
-    res.send(tasks);
+
+    if (tasks[0] && tasks[0].user_id.toString() !== req.user.id)
+      return res.status(401).send("Access denied.");
+
+    res.status(200).send(tasks);
   } catch (err) {
-    res.status(400).send(err.message);
+    console.error("---");
+    console.error(
+      new Date().toISOString(),
+      "routes\tasks.js > error post task >",
+      err
+    );
+    res.status(500).send("Server error.");
   }
 });
 
@@ -82,7 +101,7 @@ router.post("/", async (req, res) => {
       user_id: req.user.id,
     });
     await task.save();
-    res.send(task);
+    res.status(200).send(task);
   } catch (err) {
     console.error("---");
     console.error(
@@ -111,14 +130,14 @@ router.get("/:id", async (req, res) => {
     //   if (!task) {
     //     return res.status(404).send("Task not found");
     //   }
-    //   res.send(task);
+    //   res.status(200).send(task);
     // });
     if (!task) return res.status(404).send("Task not found.");
 
     if (task.user_id.toString() !== req.user.id)
       return res.status(401).send("Access denied.");
 
-    res.send(task);
+    res.status(200).send(task);
   } catch (err) {
     console.error("---");
     console.error(

@@ -16,8 +16,8 @@
   },
   "scripts": {
     "start": "nodemon server.js",
-    "test": "jest",
-    "coverage": "jest --coverage",
+    "test": "jest ",
+    "coverage": "jest --coverage --runInBand",
     "coveragePro": "nyc --reporter=text --reporter=html npm test"
   },
   "jest": {

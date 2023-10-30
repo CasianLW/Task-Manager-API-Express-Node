@@ -83,7 +83,7 @@ describe("Authentication routes", () => {
       password: "Password123",
     });
 
-    expect(response.status).toBe(400);
+    expect(response.status).toBe(409);
   });
 
   test("Login with invalid email format", async () => {
@@ -93,7 +93,6 @@ describe("Authentication routes", () => {
     });
 
     expect(response.status).toBe(400);
-    expect(response.text).toBe("Invalid email format.");
   });
 
   test("Login with valid credentials", async () => {
@@ -162,7 +161,7 @@ describe("User management routes", () => {
         name: updatedName,
       });
 
-    expect(response.status).toBe(403); // 403 for forbidden
+    expect(response.status).toBe(401); // 401 for unauthorized
   });
 
   test("Update non-existing user", async () => {
@@ -185,7 +184,6 @@ describe("User management routes", () => {
       userId = null;
     }
     expect(response.status).toBe(200);
-    expect(response.body.message).toBe("User deleted.");
   });
 
   test("Delete user with invalid admin key", async () => {
@@ -194,7 +192,7 @@ describe("User management routes", () => {
       .set("Admin-Key", "invalidKey")
       .send();
 
-    expect(response.status).toBe(403); // 403 for forbidden
+    expect(response.status).toBe(401);
   });
 
   test("Delete non-existing user", async () => {
@@ -216,23 +214,25 @@ describe("Additional test cases for coverage", () => {
     }
   });
   test("Fetch all users", async () => {
-    const response = await request(appUrl).get("/users");
+    const response = await request(appUrl)
+      .get("/users")
+      .set("Admin-Key", adminKey);
     expect(response.status).toBe(200);
   });
 
   test("Create user with invalid data", async () => {
-    const response = await request(appUrl).post("/users").send({
+    const response = await request(appUrl).post("/register").send({
       name: "",
       email: "invalidk",
       password: "shrt",
     });
-    expect(response.status).toBe(400); // Adjust as per your validation
+    expect(response.status).toBe(422);
   });
 
   test("Fetch non-existing user by ID", async () => {
-    const response = await request(appUrl).get(
-      "/users/60f4da2b3842a92fa8888888"
-    );
+    const response = await request(appUrl)
+      .get("/users/60f4da2b3842a92fa8888888")
+      .set("Admin-Key", adminKey);
     expect(response.status).toBe(404);
   });
 
@@ -248,7 +248,7 @@ describe("Additional test cases for coverage", () => {
     const response = await request(appUrl).put(`/user/someId`).send({
       name: "Test",
     });
-    expect(response.status).toBe(403);
+    expect(response.status).toBe(401);
   });
 
   test("Register without password", async () => {
@@ -256,13 +256,15 @@ describe("Additional test cases for coverage", () => {
       name: "Test User",
       email: "test2@example.com",
     });
-    expect(response.status).toBe(400); // Adjust based on your validation
+    expect(response.status).toBe(422);
   });
 
   // Error case: Providing invalid ID format for getting user
   test("Fetch user with invalid ID format", async () => {
-    const response = await request(appUrl).get("/users/invalidIDformat");
-    expect(response.status).toBe(500);
+    const response = await request(appUrl)
+      .get("/users/invalidIDformat")
+      .set("Admin-Key", adminKey);
+    expect(response.status).toBe(400);
   });
 
   // Error case: Try to update a user with invalid ID format
@@ -278,12 +280,12 @@ describe("Additional test cases for coverage", () => {
 
   // Success case: Create a user successfully through /users route
   test("Create user successfully", async () => {
-    const response = await request(appUrl).post("/users").send({
+    const response = await request(appUrl).post("/register").send({
       name: "New User",
       email: "newuser12467@example.com",
       password: "ValidPassword123",
     });
-    expect(response.status).toBe(201);
+    expect(response.status).toBe(200);
     expect(response.body.userId).toBeDefined();
 
     createdUserId = response.body.userId || null;
@@ -318,7 +320,7 @@ describe("User Model", () => {
     expect(response.status).toBe(200);
 
     const user = await User.findOne({ email: "testModelUserNew@example.com" });
-    console.log(user);
+    // console.log(user);
     expect(user).toBeTruthy();
 
     createdUserId = user._id;

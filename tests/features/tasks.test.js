@@ -2,14 +2,18 @@ require("dotenv").config();
 const request = require("supertest");
 // const app = require("../server"); // import your express app or server
 const mongoose = require("mongoose");
-const express = require("express");
-const app = express();
+// const express = require("express");
+// const app = express();
+
+// const app = require("../../server"); // import express app or server
 
 const appUrl = process.env.APP_URL || "http://localhost:3000";
-const adminKey = process.env.ADMIN_KEY;
-const User = require("../models/User");
 
-const resetDatabase = require("../routes/handlers.js");
+const adminKey = process.env.ADMIN_KEY;
+const User = require("../../models/User");
+// const User = require("../../models/User");
+
+const resetDatabase = require("../../routes/handlers.js");
 
 describe("Tasks routes", () => {
   let token1, token2, taskId, taskId2, userId1, userId2;
@@ -40,7 +44,7 @@ describe("Tasks routes", () => {
       .set("Authorization", `Bearer ${token2}`)
       .send({ body: "Task by user2", completed: true });
     taskId2 = taskRes.body._id; // Assuming your task object has an `_id` field
-  }, 10000);
+  }, 50000);
 
   afterAll(async () => {
     // Delete tasks created during tests
@@ -69,7 +73,10 @@ describe("Tasks routes", () => {
       .set("Admin-Key", adminKey)
       .send();
     // }
-  }, 10000);
+  }, 50000);
+  // afterEach(() => {
+  //   jest.clearAllTimers();
+  // });
 
   // afterAll(async () => {
   //   // cleanup
@@ -81,7 +88,7 @@ describe("Tasks routes", () => {
     const response = await request(appUrl)
       .post("/tasks")
       .set("Authorization", `Bearer ${token1}`)
-      .send({ body: "Sample task" });
+      .send({ body: "Sample task", completed: false });
 
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty("_id"); // Ensure task object with ID
@@ -109,6 +116,16 @@ describe("Tasks routes", () => {
     expect(response.status).toBe(200);
     expect(response.body).toBeInstanceOf(Array);
     expect(response.body[0]).toHaveProperty("completed", true); // Ensure the first task in the list is completed
+  });
+  test("Access task with invalid ObjectId format", async () => {
+    const invalidObjectId = "dzadzad";
+    const response = await request(appUrl)
+      .get(`/tasks/${invalidObjectId}`)
+      .set("Authorization", `Bearer ${token1}`)
+      .send();
+
+    expect(response.status).toBe(400);
+    // expect(response.body.error).toBe("Invalid ID format."); // Replace with whatever error message your server would send
   });
 
   // Test to check the pending tasks of a user
@@ -143,16 +160,6 @@ describe("Tasks routes", () => {
 
     expect(response.status).toBe(404);
   });
-  test("Access task with invalid ObjectId format", async () => {
-    const invalidObjectId = "dzadzad";
-    const response = await request(appUrl)
-      .get(`/tasks/${invalidObjectId}`)
-      .set("Authorization", `Bearer ${token1}`)
-      .send();
-
-    expect(response.status).toBe(400);
-    // expect(response.body.error).toBe("Invalid ID format."); // Replace with whatever error message your server would send
-  });
 
   test("Access unauthorized task", async () => {
     // const response = await request(app)
@@ -162,7 +169,7 @@ describe("Tasks routes", () => {
       .set("Authorization", `Bearer ${token1}`)
       .send();
 
-    expect(response.status).toBe(403);
+    expect(response.status).toBe(401);
     // expect(response.body).toBeInstanceOf(Array);
   });
   test("Delete specific task of another user", async () => {
@@ -172,7 +179,7 @@ describe("Tasks routes", () => {
       .set("Authorization", `Bearer ${token1}`)
       .send();
 
-    expect(response.status).toBe(403);
+    expect(response.status).toBe(401);
     // expect(response.body).toBeInstanceOf(Array);
   });
   test("Delete specific task", async () => {

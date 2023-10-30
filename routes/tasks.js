@@ -116,8 +116,6 @@ router.post("/", async (req, res) => {
 // Get a single task by its ID
 router.use("/:id", async (req, res, next) => {
   if (!isValidObjectId(req.params.id)) {
-    // console.error("---");
-    // console.error("task not valid id");
     return res.status(400).send("Invalid task ID.");
   }
   next();

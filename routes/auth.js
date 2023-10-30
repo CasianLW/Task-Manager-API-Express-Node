@@ -174,7 +174,7 @@ router.put("/user/:id", checkAdminKey, async (req, res) => {
     }
 
     await user.save();
-    res.send(user);
+    res.status(200).send(user);
   } catch (error) {
     console.error("---");
     console.error(

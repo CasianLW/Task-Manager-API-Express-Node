@@ -5,16 +5,22 @@ require("dotenv").config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 const { DB_USER, DB_PASSWORD, DB_NAME } = process.env;
+
 // Connection à MongoDB
 mongoose
-  .connect(
-    `mongodb+srv://${DB_USER}:${DB_PASSWORD}@${DB_NAME}?retryWrites=true&w=majority`,
-    {
-      // useNewUrlParser: true,
-      // useUnifiedTopology: true,
-      // useCreateIndex: true,
-    }
-  )
+  // .connect(
+  //   `mongodb+srv://${DB_USER}:${DB_PASSWORD}@${DB_NAME}?retryWrites=true&w=majority`,
+  //   {
+  //     // useNewUrlParser: true,
+  //     // useUnifiedTopology: true,
+  //     // useCreateIndex: true,
+  //   }
+  // )
+  .connect(process.env.MONGODB_URI, {
+    // useNewUrlParser: true,
+    // useUnifiedTopology: true,
+    // useCreateIndex: true,
+  })
   .catch((error) => console.error("Error connecting to MongoDB:", error));
 
 const db = mongoose.connection;

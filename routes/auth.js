@@ -28,13 +28,15 @@ function isValidObjectId(id) {
 function checkAdminKey(req, res, next) {
   const providedKey = req.header("Admin-Key");
   if (providedKey !== adminKey) {
-    return res.status(403).send("Access denied. Invalid admin key.");
+    return res.status(401).send("Access denied. Invalid admin key.");
   }
   next();
 }
 // Inscription
 router.post("/register", async (req, res) => {
   const { name, email, password } = req.body;
+  if (!name || !email || !password)
+    return res.status(422).send("Missing Required Information");
   // Email and Password Validation
   if (!isValidEmail(email)) {
     return res.status(400).send("Invalid email format.");
@@ -50,20 +52,31 @@ router.post("/register", async (req, res) => {
 
   // Vérification si l'utilisateur existe déjà
   let user = await User.findOne({ email });
-  if (user) return res.status(400).send("Email already exists.");
+  if (user) return res.status(409).send("Email already exists.");
   //   const salt = bcrypt.genSaltSync(12);
   //   const hashedPassword = bcrypt.hashSync(password, salt);
   //   user = new User({ name, email, password: hashedPassword });
-  user = new User({ name, email, password });
-  //   user.password = bcrypt.hashSync(password, salt);
+  try {
+    user = new User({ name, email, password });
+    //   user.password = bcrypt.hashSync(password, salt);
 
-  await user.save();
+    await user.save();
 
-  // Génération du token JWT
-  const token = jwt.sign({ id: user.id }, jwtSecret, {
-    expiresIn: "1h",
-  });
-  res.send({ token, userId: user.id });
+    // Génération du token JWT
+    const token = jwt.sign({ id: user.id }, jwtSecret, {
+      expiresIn: "1h",
+    });
+    res.status(200).send({ token, userId: user.id });
+  } catch (error) {
+    console.error("---");
+    console.error(
+      new Date().toISOString(),
+      "routesauth.js > error register >",
+      error
+    );
+
+    res.status(500).send("Server error.");
+  }
 });
 
 // Connexion
@@ -71,12 +84,14 @@ router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
     // Email and Password Validation (optional for login as this is just to check if entered email is in valid format or not)
+    if (!email || !password)
+      return res.status(422).send("Missing Required Information");
     if (!isValidEmail(email)) {
-      return res.status(400).send("Invalid email format.");
+      return res.status(400).send("Invalid email or password.");
     }
-
     const user = await User.findOne({ email });
     if (!user) return res.status(400).send("Invalid email or password.");
+    // if (!user) return res.status(400).send("Invalid email or password.");
 
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword)
@@ -85,69 +100,54 @@ router.post("/login", async (req, res) => {
     const token = jwt.sign({ id: user.id }, jwtSecret, {
       expiresIn: "1h",
     });
-    res.send({ token, userId: user.id });
+    res.status(200).send({ token, userId: user.id });
   } catch (error) {
     console.error(error);
+    console.error("---");
+    console.error(
+      new Date().toISOString(),
+      "routesauth.js > error login >",
+      error
+    );
     res.status(500).send("Server error.");
   }
 });
 
 // Fetch all users
-router.get("/users", async (req, res) => {
+router.get("/users", checkAdminKey, async (req, res) => {
   try {
     const users = await User.find();
     res.status(200).json(users);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching users" });
-  }
-});
-// Create a new user
-router.post("/users", async (req, res) => {
-  const { name, email, password } = req.body;
-
-  // Email Validation
-  if (!isValidEmail(email)) {
-    return res.status(400).send("Invalid email format.");
-  }
-
-  // Password Validation
-  if (!isValidPassword(password)) {
-    return res
-      .status(400)
-      .send(
-        "Password should have a minimum of 5 characters, at least one uppercase letter and one number."
-      );
-  }
-
-  // Check if user with given email already exists
-  let existingUser = await User.findOne({ email });
-  if (existingUser) {
-    return res.status(400).send("Email already exists.");
-  }
-
-  // Create a new user instance
-  const user = new User({ name, email, password }); // Note: Ideally, password should be hashed before saving!
-
-  try {
-    await user.save();
-    res
-      .status(201)
-      .json({ message: "User created successfully", userId: user.id });
-  } catch (error) {
-    res.status(500).json({ message: "Error creating user" });
+    console.error("---");
+    console.error(
+      new Date().toISOString(),
+      "routesauth.js > error get all users >",
+      error
+    );
+    res.status(500).json("Error fetching users.");
   }
 });
 
 // Fetch a specific user by its ID
-router.get("/users/:id", async (req, res) => {
+router.get("/users/:id", checkAdminKey, async (req, res) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).send("Invalid user ID.");
+    }
     const user = await User.findById(req.params.id);
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json("User not found");
     }
     res.status(200).json(user);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching user" });
+    console.error("---");
+    console.error(
+      new Date().toISOString(),
+      "routesauth.js > error get specific user >",
+      error
+    );
+    res.status(500).json("Error fetching user");
   }
 });
 // Update user
@@ -176,7 +176,12 @@ router.put("/user/:id", checkAdminKey, async (req, res) => {
     await user.save();
     res.send(user);
   } catch (error) {
-    console.error(error);
+    console.error("---");
+    console.error(
+      new Date().toISOString(),
+      "routesauth.js > error update user >",
+      error
+    );
     res.status(500).send("Server error.");
   }
 });
@@ -193,9 +198,14 @@ router.delete("/user/:id", checkAdminKey, async (req, res) => {
     if (!user) {
       return res.status(404).send("User not found.");
     }
-    res.send({ message: "User deleted." });
+    res.status(200).send("User deleted.");
   } catch (error) {
-    console.error("Error detail:", error.message); // Added more detailed logging
+    console.error("---");
+    console.error(
+      new Date().toISOString(),
+      "routesauth.js > error delete >",
+      error
+    );
     res.status(500).send("Server error.");
   }
 });
@@ -204,9 +214,14 @@ router.delete("/secret/reset-database", checkAdminKey, async (req, res) => {
     await User.deleteMany();
     await Task.deleteMany();
 
-    return res.status(200).json({ message: "Database Deleted" });
+    return res.status(200).json("Database Reseted");
   } catch (error) {
-    console.error("Error detail:", error.message);
+    console.error("---");
+    console.error(
+      new Date().toISOString(),
+      "routesauth.js > error secret/reset-database >",
+      error
+    );
     res.status(500).send("Server error.");
   }
 });

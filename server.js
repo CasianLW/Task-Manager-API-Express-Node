@@ -34,4 +34,5 @@ app.use("/", authRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+  console.log(`Check at url :  ${process.env.APP_URL}`);
 });
